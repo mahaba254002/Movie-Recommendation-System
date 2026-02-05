@@ -1,0 +1,20 @@
+# Exclude all backend and unnecessary files from Vercel build
+*.py
+*.csv
+*.html
+*.md
+__pycache__/
+venv/
+env/
+posters/
+brain/
+.git/
+requirements.txt
+
+# Explicitly exclude incompatible platform binaries if they exist
+node_modules/@swc/core-linux-x64-gnu
+node_modules/@swc/core-linux-x64-musl
+node_modules/@esbuild/linux-x64
+
+# Keep the frontend
+!frontend/
