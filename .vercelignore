@@ -1,20 +1,23 @@
-# Exclude all backend and unnecessary files from Vercel build
-*.py
-*.csv
-*.html
-*.md
-__pycache__/
-venv/
-env/
+# Backend files and directories to exclude
 posters/
 brain/
+venv/
+env/
+__pycache__/
 .git/
+.github/
+.vscode/
+
+# Backend source files (root only preferred, but safe to ignore if not in frontend)
+*.py
+*.csv
 requirements.txt
+scraper.py
+recommender.py
+main.py
+data_manager.py
+anime_*.py
+patch_posters.py
 
-# Explicitly exclude incompatible platform binaries if they exist
-node_modules/@swc/core-linux-x64-gnu
-node_modules/@swc/core-linux-x64-musl
-node_modules/@esbuild/linux-x64
-
-# Keep the frontend
+# Keep frontend fully accessible
 !frontend/
