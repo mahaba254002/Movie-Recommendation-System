@@ -4,12 +4,27 @@ import { WatchifyTitle, getPosterUrl } from '../lib/api';
 
 interface DynamicHeroProps {
     titles: WatchifyTitle[];
-    relatedImages?: string[];
 }
 
-const DynamicHero: React.FC<DynamicHeroProps> = ({ titles, relatedImages = [] }) => {
+const DynamicHero: React.FC<DynamicHeroProps> = ({ titles }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFading, setIsFading] = useState(false);
+
+    const handleNext = React.useCallback(() => {
+        setIsFading(true);
+        setTimeout(() => {
+            setCurrentIndex((prev) => (prev + 1) % titles.length);
+            setIsFading(false);
+        }, 500);
+    }, [titles.length]);
+
+    const handlePrev = React.useCallback(() => {
+        setIsFading(true);
+        setTimeout(() => {
+            setCurrentIndex((prev) => (prev - 1 + titles.length) % titles.length);
+            setIsFading(false);
+        }, 500);
+    }, [titles.length]);
 
     useEffect(() => {
         if (titles.length <= 1) return;
@@ -19,23 +34,7 @@ const DynamicHero: React.FC<DynamicHeroProps> = ({ titles, relatedImages = [] })
         }, 8000); // Rotate every 8 seconds
 
         return () => clearInterval(interval);
-    }, [titles.length, currentIndex]);
-
-    const handleNext = () => {
-        setIsFading(true);
-        setTimeout(() => {
-            setCurrentIndex((prev) => (prev + 1) % titles.length);
-            setIsFading(false);
-        }, 500);
-    };
-
-    const handlePrev = () => {
-        setIsFading(true);
-        setTimeout(() => {
-            setCurrentIndex((prev) => (prev - 1 + titles.length) % titles.length);
-            setIsFading(false);
-        }, 500);
-    };
+    }, [titles.length, handleNext]);
 
     if (titles.length === 0) {
         return (
@@ -59,9 +58,6 @@ const DynamicHero: React.FC<DynamicHeroProps> = ({ titles, relatedImages = [] })
 
     // Get genres
     const genres = title.Genres.split(',').map(g => g.trim()).slice(0, 3);
-
-    // Create thumbnail array
-    const thumbnails = titles.slice(0, 6).map(t => getPosterUrl(t.Poster_Path));
 
     return (
         <div className="relative w-full min-h-screen overflow-hidden bg-slate-950">

@@ -8,8 +8,7 @@ import {
   WatchifyTitle,
   fetchTitles,
   fetchTrending,
-  searchTitles,
-  getRecommendations
+  searchTitles
 } from '../lib/api';
 
 export default function Home() {
@@ -19,16 +18,13 @@ export default function Home() {
   const [anime, setAnime] = useState<WatchifyTitle[]>([]);
   const [recentlyWatched, setRecentlyWatched] = useState<WatchifyTitle[]>([]);
 
-  const [selectedTitle, setSelectedTitle] = useState<WatchifyTitle | null>(null);
   const [activeCategory, setActiveCategory] = useState('home');
   const [searchResults, setSearchResults] = useState<WatchifyTitle[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        setIsLoading(true);
         console.log('Watchify: Starting data fetch...');
 
         const fetchResults = await Promise.allSettled([
@@ -63,25 +59,20 @@ export default function Home() {
 
         if (trendingData.length > 0) {
           console.log('Watchify: Selecting title from trending:', trendingData[0].Name);
-          setSelectedTitle(trendingData[0]);
         } else if (moviesData.titles?.length > 0) {
           console.log('Watchify: Selecting title from movies:', moviesData.titles[0].Name);
-          setSelectedTitle(moviesData.titles[0]);
         } else {
           console.warn('Watchify: No titles found to select!');
         }
       } catch (error) {
         console.error('Error loading Watchify data:', error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
     loadInitialData();
   }, []);
 
-  const handleTitleSelect = async (title: WatchifyTitle) => {
-    setSelectedTitle(title);
+  const handleTitleSelect = async () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
