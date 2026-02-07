@@ -33,6 +33,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({ title, items, onItemClick }) 
                                     <img
                                         src={posterUrl}
                                         alt={item.Name}
+                                        loading="lazy"
                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x450?text=No+Poster';

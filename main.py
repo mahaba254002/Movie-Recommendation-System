@@ -17,11 +17,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve movie posters as static files
+# Serve movie posters as static files with caching
 # Ensure posters directory exists to avoid mount errors
 if not os.path.exists("posters"):
     os.makedirs("posters")
-app.mount("/posters", StaticFiles(directory="posters"), name="posters")
+app.mount("/posters", StaticFiles(directory="posters", html=False), name="posters")
+
+# Add cache control headers for static files
+@app.middleware("http")
+async def add_cache_headers(request, call_next):
+    response = await call_next(request)
+    # Cache poster images for 1 week (604800 seconds)
+    if request.url.path.startswith("/posters/"):
+        response.headers["Cache-Control"] = "public, max-age=604800, immutable"
+    return response
 
 # Initialize recommender
 recommender = MovieRecommender()
@@ -72,17 +81,67 @@ def get_trending(count: int = 10):
 
 @app.get("/search")
 def search_titles(query: str):
-    """Searches for titles by name across all categories."""
-    if not os.path.exists('movies_data.csv'):
+    """Searches for titles by name, genre, or actors with fuzzy matching."""
+    # Validate query length
+    if len(query.strip()) < 2:
         return []
     
-    df = pd.read_csv('movies_data.csv')
-    df = df.fillna('None')
-    # Search in both Name and Genres
-    mask = (df['Name'].str.contains(query, case=False, na=False)) | \
-           (df['Genres'].str.contains(query, case=False, na=False))
-    results = df[mask].to_dict(orient='records')
-    return results[:12]
+    # Use cached data from recommender instead of reading CSV every time
+    if recommender.movies is None:
+        recommender.load_data()
+    
+    df = recommender.movies.copy()
+    query_lower = query.lower().strip()
+    
+    # Split query into words for better matching
+    query_words = query_lower.split()
+    
+    def calculate_relevance(row):
+        """Calculate relevance score for ranking results"""
+        score = 0
+        name_lower = str(row['Name']).lower()
+        genres_lower = str(row['Genres']).lower()
+        actors_lower = str(row['Actors']).lower()
+        
+        # Exact match in name (highest priority)
+        if query_lower in name_lower:
+            score += 100
+        
+        # Name starts with query
+        if name_lower.startswith(query_lower):
+            score += 50
+        
+        # All query words found in name
+        if all(word in name_lower for word in query_words):
+            score += 30
+        
+        # Match in genres
+        if query_lower in genres_lower:
+            score += 20
+        
+        # Match in actors
+        if query_lower in actors_lower:
+            score += 15
+        
+        # Partial word matches in name (e.g., "spider" matches "Spider-Man")
+        name_words = name_lower.replace('-', ' ').replace(':', ' ').split()
+        for query_word in query_words:
+            for name_word in name_words:
+                if name_word.startswith(query_word):
+                    score += 10
+        
+        return score
+    
+    # Calculate relevance scores
+    df['relevance'] = df.apply(calculate_relevance, axis=1)
+    
+    # Filter results with score > 0
+    results = df[df['relevance'] > 0].sort_values('relevance', ascending=False)
+    
+    # Drop the relevance column before returning
+    results = results.drop('relevance', axis=1)
+    
+    return results.head(12).to_dict(orient='records')
 
 @app.get("/recommend/{name}")
 def get_recommendations(

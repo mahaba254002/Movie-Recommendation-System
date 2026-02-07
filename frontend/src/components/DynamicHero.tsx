@@ -152,6 +152,7 @@ const DynamicHero: React.FC<DynamicHeroProps> = ({ titles }) => {
                                 <img
                                     src={posterUrl}
                                     alt={title.Name}
+                                    fetchPriority="high"
                                     className="relative w-80 h-[480px] object-cover rounded-2xl shadow-2xl border border-white/10"
                                 />
 

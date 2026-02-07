@@ -19,6 +19,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, onClick, isSelected }) => 
                 <img
                     src={getPosterUrl(movie.Poster_Path)}
                     alt={movie.Name}
+                    loading="lazy"
                     className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-80"
                     onError={(e) => {
                         (e.target as HTMLImageElement).src = 'https://via.placeholder.com/500x750?text=No+Poster';

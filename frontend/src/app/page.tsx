@@ -29,9 +29,9 @@ export default function Home() {
 
         const fetchResults = await Promise.allSettled([
           fetchTrending(12),
-          fetchTitles('Movie', 1, 30),
-          fetchTitles('TV Show', 1, 30),
-          fetchTitles('Anime', 1, 30)
+          fetchTitles('Movie', 1, 12),
+          fetchTitles('TV Show', 1, 12),
+          fetchTitles('Anime', 1, 12)
         ]);
 
         console.log('Watchify: Fetch complete. Processing results...');
@@ -104,8 +104,21 @@ export default function Home() {
       }
     } else {
       setIsSearching(false);
+      setSearchResults([]);
     }
   };
+
+  // Debounced search handler
+  const debouncedSearch = React.useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return (query: string) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => handleSearch(query), 300); // 300ms delay
+      };
+    })(),
+    []
+  );
 
   // Determine what content to show based on active category
   const getFilteredContent = () => {
@@ -128,7 +141,7 @@ export default function Home() {
       <GlassmorphicNav
         activeCategory={activeCategory}
         onCategoryChange={handleCategoryChange}
-        onSearch={handleSearch}
+        onSearch={debouncedSearch}
       />
 
       <DynamicHero titles={trending.length > 0 ? trending : movies.slice(0, 8)} />
