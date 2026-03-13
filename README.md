@@ -1,7 +1,5 @@
 # 🎬 Watchify: Premium Recommendation Engine
 
-![Watchify Banner](assets/banner.png)
-
 Watchify is a state-of-the-art Movie, TV Show, and Anime recommendation engine. It leverages AI-powered **Content-Based Filtering** to provide personalized suggestions based on genres, plot summaries, and cast members.
 
 ---
